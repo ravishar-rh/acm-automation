@@ -1,8 +1,9 @@
+# ACM operator does not support AllNamespaces install mode. It must watch only this namespace.
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
   name: advanced-cluster-management-operatorgroup
   namespace: open-cluster-management
 spec:
-  targetNamespaces: []
-  # Empty targetNamespaces = all namespaces (cluster-wide)
+  targetNamespaces:
+    - open-cluster-management
