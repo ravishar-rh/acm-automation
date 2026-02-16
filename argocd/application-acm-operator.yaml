@@ -1,0 +1,32 @@
+# ArgoCD Application to deploy ACM (Advanced Cluster Management) operator on a target cluster.
+# Customize: repo URL, path, destination server/name, and sync policy as needed.
+#
+# To deploy on a specific cluster:
+# - For in-cluster: remove destination.name or set destination.server to the in-cluster API URL.
+# - For a remote cluster: add the cluster to ArgoCD (argocd cluster add <context>) then set
+#   destination.name to the cluster name, or use destination.server with the cluster API URL.
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: acm-operator
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/ravishar-rh/acm-automation.git  # Update to your repo URL
+    path: manifests/acm-operator
+    targetRevision: HEAD
+  destination:
+    server: https://kubernetes.default.svc  # In-cluster; change for remote cluster
+    # name: my-target-cluster   # Uncomment and set when using a named cluster in ArgoCD
+    namespace: open-cluster-management
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

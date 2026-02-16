@@ -1,0 +1,58 @@
+---
+# Ansible playbook: Clean up ACM (Advanced Cluster Management) operator from a cluster.
+#
+# Removes (in order):
+#   1. MultiClusterHub and MultiClusterEngine CRs (so the operator can tear down cleanly)
+#   2. ACM operator manifests (Subscription, OperatorGroup, namespace) via kubectl delete -k
+#
+# Prerequisites: Same as deploy (kubectl/oc, kustomize, KUBECONFIG or -e kubeconfig=...).
+#
+# Usage:
+#   ansible-playbook -i inventory/sample.yml playbook-cleanup-acm-operator.yml
+#   ansible-playbook -i inventory/sample.yml playbook-cleanup-acm-operator.yml -e "kubeconfig=/path/to/kubeconfig"
+#
+- name: Clean up ACM operator from target cluster
+  hosts: all
+  gather_facts: true
+  vars:
+    manifest_dir: "{{ playbook_dir }}/../manifests/acm-operator"
+    acm_namespace: open-cluster-management
+    kubeconfig: "{{ lookup('env', 'KUBECONFIG') | default('', true) }}"
+    kubectl_cmd: "{{ 'export KUBECONFIG=' + kubeconfig + ' && ' if kubeconfig else '' }}kubectl"
+  tasks:
+    - name: Check manifest directory exists
+      ansible.builtin.stat:
+        path: "{{ manifest_dir }}"
+      register: manifest_stat
+      failed_when: not manifest_stat.stat.isdir
+
+    - name: Delete MultiClusterHub custom resources (if any)
+      ansible.builtin.shell: |
+        {{ kubectl_cmd }} delete multiclusterhub --all -n {{ acm_namespace }} --ignore-not-found --timeout=120s
+      register: delete_mch
+      ignore_errors: true
+      changed_when: delete_mch.rc == 0 and "No resources found" not in delete_mch.stdout
+
+    - name: Delete MultiClusterEngine custom resources (if any)
+      ansible.builtin.shell: |
+        {{ kubectl_cmd }} delete multiclusterengine --all -n {{ acm_namespace }} --ignore-not-found --timeout=120s
+      register: delete_mce
+      ignore_errors: true
+      changed_when: delete_mce.rc == 0 and "No resources found" not in delete_mce.stdout
+
+    - name: Wait for operator to tear down after MCH/MCE removal
+      ansible.builtin.pause:
+        seconds: 30
+      when: delete_mch is changed or delete_mce is changed
+
+    - name: Delete ACM operator manifests (Subscription, OperatorGroup, namespace)
+      ansible.builtin.shell: |
+        {{ kubectl_cmd }} delete -k "{{ manifest_dir }}" --ignore-not-found --timeout=180s
+      register: delete_result
+      changed_when: "'deleted' in delete_result.stdout or delete_result.rc == 0"
+      failed_when: delete_result.rc != 0 and 'NotFound' not in delete_result.stderr
+
+    - name: Report cleanup result
+      ansible.builtin.debug:
+        msg: "ACM operator cleanup completed. {{ delete_result.stdout_lines | default([]) }}"
+      when: delete_result is defined

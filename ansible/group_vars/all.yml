@@ -1,0 +1,11 @@
+# Variables for ACM operator deployment (Ansible).
+# Override kubeconfig or use in-cluster auth when running from inside the cluster.
+---
+# Path to kubeconfig for target cluster (optional; can use K8S_AUTH_KUBECONFIG env)
+# kubeconfig: ~/.kube/config
+
+# ACM operator subscription channel (e.g. release-2.11, release-2.10)
+acm_channel: release-2.11
+
+# ACM operator install plan approval: Automatic or Manual
+acm_install_plan_approval: Automatic

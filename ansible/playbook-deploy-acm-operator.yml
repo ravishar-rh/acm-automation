@@ -1,0 +1,42 @@
+---
+# Ansible playbook: Deploy ACM (Advanced Cluster Management) operator on a given cluster.
+#
+# Prerequisites:
+#   - Target cluster is OpenShift (OLM available) with redhat-operators catalog.
+#   - kubectl or oc and kustomize in PATH on the host where Ansible runs.
+#   - KUBECONFIG set or pass -e "kubeconfig=/path/to/kubeconfig" to target a cluster.
+#
+# Usage:
+#   # Using default inventory and kubeconfig from env
+#   ansible-playbook -i inventory/sample.yml playbook-deploy-acm-operator.yml
+#
+#   # Target a specific kubeconfig
+#   ansible-playbook -i inventory/sample.yml playbook-deploy-acm-operator.yml -e "kubeconfig=/path/to/kubeconfig"
+#
+#   # With custom inventory
+#   ansible-playbook -i inventory/hosts.yml playbook-deploy-acm-operator.yml
+#
+- name: Deploy ACM operator on target cluster
+  hosts: all
+  gather_facts: true
+  vars:
+    manifest_dir: "{{ playbook_dir }}/../manifests/acm-operator"
+    kubeconfig: "{{ lookup('env', 'KUBECONFIG') | default('', true) }}"
+  tasks:
+    - name: Check manifest directory exists
+      ansible.builtin.stat:
+        path: "{{ manifest_dir }}"
+      register: manifest_stat
+      failed_when: not manifest_stat.stat.isdir
+
+    - name: Apply ACM operator manifests with Kustomize
+      ansible.builtin.shell: |
+        {{ 'export KUBECONFIG=' + kubeconfig + '; ' if kubeconfig else '' }}kubectl apply -k "{{ manifest_dir }}"
+      args:
+        executable: /bin/bash
+      register: apply_result
+      changed_when: "'configured' in apply_result.stdout or 'created' in apply_result.stdout"
+
+    - name: Report apply result
+      ansible.builtin.debug:
+        msg: "ACM operator manifests applied. {{ apply_result.stdout_lines | default([]) }}"

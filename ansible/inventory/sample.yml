@@ -1,0 +1,13 @@
+# Sample inventory for deploying ACM operator.
+# Copy to inventory/hosts.yml and set your cluster connection.
+#
+# Option 1: Use kubeconfig (set K8S_AUTH_KUBECONFIG or pass --extra-vars "kubeconfig=/path/to/kubeconfig")
+# Option 2: Use in-cluster config when running inside the cluster
+#
+all:
+  hosts:
+    target_cluster:
+      ansible_connection: local
+  vars:
+    # Path to manifests (relative to playbook or absolute)
+    acm_manifests_path: "{{ playbook_dir }}/../manifests/acm-operator"
