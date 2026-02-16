@@ -99,5 +99,10 @@ If the namespace sticks (e.g. finalizers), remove any remaining resources in tha
 
 ## Customization
 
-- **ACM channel**: Edit **manifests/acm-operator/subscription.yaml** and set `spec.channel` (e.g. `release-2.11`, `release-2.10`) or override via Kustomize vars if you add them.
+- **ACM channel**: The Subscription `spec.channel` must match a channel in your cluster’s `redhat-operators` catalog. If you see **"no operators found in channel release-2.11"** (or similar), the channel does not exist in your catalog. List available channels and the default:
+  ```bash
+  oc get packagemanifest advanced-cluster-management -n openshift-marketplace -o jsonpath='{.status.defaultChannel}'
+  oc get packagemanifest advanced-cluster-management -n openshift-marketplace -o jsonpath='{range .status.channels[*]}{.name}{"\n"}{end}'
+  ```
+  Then set `spec.channel` in **manifests/acm-operator/subscription.yaml** to one of those (e.g. `release-2.14`, `release-2.15`, or the defaultChannel). The manifest default is `release-2.14`.
 - **Install plan**: Set `spec.installPlanApproval` in the Subscription to `Automatic` or `Manual`.

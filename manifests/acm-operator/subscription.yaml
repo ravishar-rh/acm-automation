@@ -1,10 +1,15 @@
+# Channel must exist in your redhat-operators catalog. If you see "no operators found in
+# channel ...", list channels and default with:
+#   oc get packagemanifest advanced-cluster-management -n openshift-marketplace -o jsonpath='{range .status.channels[*]}{.name}{"\n"}{end}'
+#   oc get packagemanifest advanced-cluster-management -n openshift-marketplace -o jsonpath='{.status.defaultChannel}'
+# Then set spec.channel below to an available channel (e.g. release-2.14, release-2.15, or defaultChannel).
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
   name: advanced-cluster-management
   namespace: open-cluster-management
 spec:
-  channel: release-2.11
+  channel: release-2.14
   name: advanced-cluster-management
   source: redhat-operators
   sourceNamespace: openshift-marketplace
