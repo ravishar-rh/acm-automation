@@ -11,31 +11,35 @@ Deploy the Red Hat Advanced Cluster Management (ACM) operator on a given OpenShi
 ## Prerequisites
 
 - **Target cluster**: OpenShift with OLM and the `redhat-operators` catalog (default on OpenShift).
-- **ArgoCD**: For the ArgoCD path, ArgoCD must be installed and have access to the target cluster.
+- **ArgoCD**: For the ArgoCD path, ArgoCD must be installed (this creates the `argocd` namespace) and have access to the target cluster. If the `argocd` namespace is missing, install ArgoCD first, then apply the Application.
 - **Ansible**: For the Ansible path, `kubectl` (or `oc`) and `kustomize` must be in `PATH`; `KUBECONFIG` or `kubeconfig` extra var points at the target cluster.
 
 ---
 
 ## 1. Deploy with ArgoCD
 
-1. Update the Application source in **argocd/application-acm-operator.yaml**:
+1. Ensure **ArgoCD is installed** on the cluster (the `argocd` namespace must exist). If you see `namespaces "argocd" not found`, install ArgoCD first:
+   - **OpenShift**: Install the [OpenShift GitOps](https://docs.openshift.com/container-platform/latest/cicd/gitops/installing-openshift-gitops.html) operator (Red Hat Argo CD); it creates the `argocd` namespace.
+   - **Other clusters**: Create the `argocd` namespace and install [Argo CD](https://argo-cd.readthedocs.io/en/stable/getting_started/#installation), e.g. from the official install manifest.
+
+2. Update the Application source in **argocd/application-acm-operator.yaml**:
    - Set `source.repoURL` to your Git repo (e.g. this repo).
    - Set `source.path` to `manifests/acm-operator` (or your path).
    - Set `source.targetRevision` if not `HEAD`.
 
-2. Set the **destination cluster**:
+3. Set the **destination cluster**:
    - **In-cluster**: Keep `destination.server: https://kubernetes.default.svc`.
    - **Remote cluster**: Add the cluster in ArgoCD (`argocd cluster add <context>`) and set either:
      - `destination.name: <cluster-name>`, or  
      - `destination.server: <cluster-api-url>`.
 
-3. Apply the Application:
+4. Apply the Application:
 
    ```bash
    kubectl apply -f argocd/application-acm-operator.yaml
    ```
 
-4. ArgoCD will sync and create the `open-cluster-management` namespace, OperatorGroup, and Subscription. The ACM operator will install via OLM. Optionally create a **MultiClusterHub** CR to deploy the full ACM hub.
+5. ArgoCD will sync and create the `open-cluster-management` namespace, OperatorGroup, and Subscription. The ACM operator will install via OLM. Optionally create a **MultiClusterHub** CR to deploy the full ACM hub.
 
 ---
 

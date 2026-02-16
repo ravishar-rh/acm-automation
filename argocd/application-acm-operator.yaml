@@ -1,4 +1,6 @@
 # ArgoCD Application to deploy ACM (Advanced Cluster Management) operator on a target cluster.
+# Prerequisite: ArgoCD must be installed so the "argocd" namespace exists. If ArgoCD uses another
+# namespace, change metadata.namespace below to that namespace.
 # Customize: repo URL, path, destination server/name, and sync policy as needed.
 #
 # To deploy on a specific cluster:
