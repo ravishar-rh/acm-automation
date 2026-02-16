@@ -1,0 +1,9 @@
+# MultiClusterHub is required for the ACM operator to deploy the full hub (console, cluster
+# management, etc.). The operator watches for this CR and installs MCE and ACM components.
+# Optional: set spec.availabilityConfig: High for HA.
+apiVersion: operator.open-cluster-management.io/v1
+kind: MultiClusterHub
+metadata:
+  name: multiclusterhub
+  namespace: open-cluster-management
+spec: {}

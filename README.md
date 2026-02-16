@@ -4,7 +4,7 @@ Deploy the Red Hat Advanced Cluster Management (ACM) operator on a given OpenShi
 
 ## Contents
 
-- **manifests/acm-operator/** – Kubernetes manifests (Namespace, OperatorGroup, Subscription) for the ACM operator, managed with Kustomize.
+- **manifests/acm-operator/** – Kubernetes manifests (Namespace, OperatorGroup, Subscription, MultiClusterHub) for the ACM operator, managed with Kustomize.
 - **argocd/** – ArgoCD Application that syncs the ACM operator manifests to a target cluster.
 - **ansible/** – Ansible playbook that applies the same manifests to a cluster using `kubectl apply -k`.
 
@@ -41,7 +41,7 @@ Deploy the Red Hat Advanced Cluster Management (ACM) operator on a given OpenShi
    kubectl apply -f argocd/application-acm-operator.yaml
    ```
 
-5. ArgoCD will sync and create the `open-cluster-management` namespace, OperatorGroup, and Subscription. The ACM operator will install via OLM. Optionally create a **MultiClusterHub** CR to deploy the full ACM hub.
+5. ArgoCD will sync and create the `open-cluster-management` namespace, OperatorGroup, Subscription, and **MultiClusterHub** CR. The ACM operator installs via OLM; the MultiClusterHub CR triggers deployment of the full ACM hub (console, cluster management, MCE).
 
 ---
 
@@ -64,7 +64,7 @@ Deploy the Red Hat Advanced Cluster Management (ACM) operator on a given OpenShi
    ansible-playbook -i inventory/sample.yml playbook-deploy-acm-operator.yml -e "kubeconfig=/path/to/kubeconfig"
    ```
 
-3. The playbook runs `kubectl apply -k` against **manifests/acm-operator**, creating the same namespace, OperatorGroup, and Subscription. The ACM operator installs via OLM.
+3. The playbook runs `kubectl apply -k` against **manifests/acm-operator**, creating the namespace, OperatorGroup, Subscription, and MultiClusterHub. The ACM operator installs via OLM; the MultiClusterHub triggers the full hub install.
 
 ---
 
