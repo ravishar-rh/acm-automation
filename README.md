@@ -18,9 +18,11 @@ Deploy the Red Hat Advanced Cluster Management (ACM) operator on a given OpenShi
 
 ## 1. Deploy with ArgoCD
 
-1. Ensure **ArgoCD is installed** on the cluster (the `argocd` namespace must exist). If you see `namespaces "argocd" not found`, install ArgoCD first:
-   - **OpenShift**: Install the [OpenShift GitOps](https://docs.openshift.com/container-platform/latest/cicd/gitops/installing-openshift-gitops.html) operator (Red Hat Argo CD); it creates the `argocd` namespace.
-   - **Other clusters**: Create the `argocd` namespace and install [Argo CD](https://argo-cd.readthedocs.io/en/stable/getting_started/#installation), e.g. from the official install manifest.
+1. Ensure the **`argocd` namespace exists** so the Application apply does not fail. If you see `namespaces "argocd" not found`:
+   ```bash
+   oc apply -f argocd/namespace.yaml
+   ```
+   Then install Argo CD (or OpenShift GitOps) into that namespace so the Application is actually synced. **OpenShift**: install the [OpenShift GitOps](https://docs.openshift.com/container-platform/latest/cicd/gitops/installing-openshift-gitops.html) operator (it usually uses the `openshift-gitops` namespace — if so, use that namespace for the Application: set `metadata.namespace: openshift-gitops` in **argocd/application-acm-operator.yaml** and apply the Application).
 
 2. Update the Application source in **argocd/application-acm-operator.yaml**:
    - Set `source.repoURL` to your Git repo (e.g. this repo).

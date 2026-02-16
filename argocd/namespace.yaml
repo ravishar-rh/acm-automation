@@ -1,0 +1,9 @@
+# Create the argocd namespace so "oc apply -f application-acm-operator.yaml" does not fail.
+# You must still install Argo CD (or OpenShift GitOps) so the Application is actually synced.
+# On OpenShift with GitOps operator, the namespace is often "openshift-gitops" — in that case
+# create that namespace if needed, and set metadata.namespace to openshift-gitops in the Application.
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argocd
